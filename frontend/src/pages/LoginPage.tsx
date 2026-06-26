@@ -10,40 +10,58 @@ const LoginPage: React.FC<{ setIsLoggedIn: (v: boolean) => void }> = ({ setIsLog
   const [showReset, setShowReset] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = () => {
-    if (email && password) {
-      localStorage.setItem('user', JSON.stringify({ email }));
-      setIsLoggedIn(true);
-      navigate('/dashboard');
+    if (!email || !password) {
+      setError('Please fill in both fields');
+      return;
+    }
+
+    const existingUsers = JSON.parse(localStorage.getItem('allUsers') || '[]');
+    const foundUser = existingUsers.find((u: any) => u.email === email);
+
+    if (!foundUser) {
+      setError("This email isn't registered yet. Please sign up first.");
+      return;
+    }
+
+    if (foundUser.password !== password) {
+      setError('Incorrect password. Please try again.');
+      return;
+    }
+
+    setError('');
+    localStorage.setItem('user', JSON.stringify({ name: foundUser.name, email }));
+    setIsLoggedIn(true);
+    navigate('/dashboard');
+  };
+
+  const handleReset = async () => {
+    if (resetEmail) {
+      try {
+        await emailjs.send(
+          'service_iv0q4ni',
+          'template_8g40wuh',
+          {
+            to_name: resetEmail,
+            reset_link: 'https://nexora-hpfg.vercel.app/reset',
+            email: resetEmail,
+          },
+          'N0wXNZqOX3_A-sPMv'
+        );
+        setResetSent(true);
+      } catch (error) {
+        console.error('Email error:', error);
+      }
     }
   };
 
- const handleReset = async () => {
-  if (resetEmail) {
-    try {
-      await emailjs.send(
-        'service_iv0q4ni',
-        'template_8g40wuh',
-        {
-          to_name: resetEmail,
-          reset_link: 'http://localhost:3000/reset',
-          email: resetEmail,
-        },
-        'N0wXNZqOX3_A-sPMv'
-      );
-      setResetSent(true);
-    } catch (error) {
-      console.error('Email error:', error);
-    }
-  }
-};
-
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: "'Segoe UI', sans-serif" }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: "'Segoe UI', sans-serif", flexWrap: 'wrap' as const }}>
 
       {/* Left Side - Form */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '60px', background: 'white' }}>
+      <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px 30px', background: 'white', minWidth: '300px' }}>
         <div style={{ cursor: 'pointer', color: '#667eea', marginBottom: '40px', fontSize: '15px' }} onClick={() => navigate('/')}>
           ← Back to Home
         </div>
@@ -63,11 +81,13 @@ const LoginPage: React.FC<{ setIsLoggedIn: (v: boolean) => void }> = ({ setIsLog
             <input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••"
               style={{ width: '100%', padding: '14px', border: '2px solid #eee', borderRadius: '10px', fontSize: '15px', marginBottom: '10px', boxSizing: 'border-box', outline: 'none' }} />
 
-            <div style={{ textAlign: 'right', marginBottom: '25px' }}>
+            <div style={{ textAlign: 'right', marginBottom: '15px' }}>
               <span onClick={() => setShowReset(true)} style={{ color: '#667eea', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}>
                 Forgot password?
               </span>
             </div>
+
+            {error && <p style={{ color: 'red', marginBottom: '15px', fontSize: '14px' }}>❌ {error}</p>}
 
             <button
               onClick={handleLogin}
@@ -109,7 +129,7 @@ const LoginPage: React.FC<{ setIsLoggedIn: (v: boolean) => void }> = ({ setIsLog
       </div>
 
       {/* Right Side - Decorative */}
-      <div style={{ flex: 1, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '60px', color: 'white' }}>
+      <div style={{ flex: '1 1 320px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px 30px', color: 'white', minWidth: '300px' }}>
         <h2 style={{ fontSize: '38px', fontWeight: '800', marginBottom: '20px' }}>Your Career,<br />Intelligently Matched</h2>
         <p style={{ fontSize: '17px', opacity: 0.85, marginBottom: '40px', lineHeight: 1.7 }}>Join thousands of professionals who found their perfect role through our AI-powered platform.</p>
         {[
