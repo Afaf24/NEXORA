@@ -78,7 +78,7 @@ const MatchPage: React.FC = () => {
       formData.append('cv', file);
       formData.append('jobs', JSON.stringify(formattedJobs));
       setStep('📊 Calculating match scores...');
-      const matchRes = await axios.post('http://localhost:5000/api/match', formData);
+      const matchRes = await axios.post('https://nexora-backend-dh4g.onrender.com/api/match', formData);
       setStep('✅ Done!');
       const finalMatches = matchRes.data.matches.map((match: any) => {
         const originalJob = realJobs.find((j: Job) => j.job_id === match.job_id);

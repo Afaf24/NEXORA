@@ -32,7 +32,7 @@ const ProfilePage: React.FC<{ setIsLoggedIn: (v: boolean) => void }> = ({ setIsL
         education: 'Computer Science degree',
         description: 'General skill analysis'
       }]));
-      const res = await axios.post('http://localhost:5000/api/match', formData);
+      const res = await axios.post('https://nexora-backend-dh4g.onrender.com/api/match', formData);
       const match = res.data.matches[0];
       setSkills({
         breakdown: match.breakdown,
