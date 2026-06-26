@@ -3,6 +3,7 @@ const cors = require('cors');
 const multer = require('multer');
 const axios = require('axios');
 const FormData = require('form-data');
+const { spawn } = require('child_process');
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -22,9 +23,22 @@ app.post('/api/match', upload.single('cv'), async (req, res) => {
     });
     formData.append('jobs', jobs);
 
-    const response = await axios.post('http://localhost:8000/match', formData, {
-      headers: formData.getHeaders(),
-    });
+    // Change this line:
+// REPLACE LINES 24 TO 29 WITH THIS:
+
+// --- MOCKING THE RESPONSE TO STOP THE CRASH ---
+// Since the AI engine isn't running on the server, we return 
+// a fake success message so the website doesn't error out.
+const mockMatch = {
+  data: {
+    matches: [{
+      breakdown: "This is a mock result because the AI Engine is not connected.",
+      match_score: 90
+    }]
+  }
+};
+res.json(mockMatch.data);
+// ----------------------------------------------
 
     res.json(response.data);
   } catch (error) {
